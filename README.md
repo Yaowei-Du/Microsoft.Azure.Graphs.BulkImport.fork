@@ -1,7 +1,7 @@
 # Microsoft.Azure.Graphs.BulkImport Sample
 Notes for using the Microsoft.Azure.Graphs.BulkImport library:
 
-0. Please find the .nupkg for the library along with this read me. Make sure to reference all .dlls within this package, in your code.
+0. Please find the `.nupkg` for the library in `./packages` along with this read me. Make sure to reference all .dlls within this package, in your code.
 
 1. This package comes with it's own internal version of the Microsoft.Azure.Documents.Client. Please don’t override that with one available on public Document SDK nuget.
 We will get rid of this dependency after we release the next SDK.
