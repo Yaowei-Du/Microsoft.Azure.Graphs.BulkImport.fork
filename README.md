@@ -1,4 +1,4 @@
-# Microsoft.Azure.Graphs.BulkImport Sample
+﻿# Microsoft.Azure.Graphs.BulkImport Sample
 Notes for using the Microsoft.Azure.Graphs.BulkImport library:
 
 0. Please find the `.nupkg` for the library in `./packages` along with this read me. Make sure to reference all .dlls within this package in your code.
@@ -28,8 +28,16 @@ public GraphBulkImport(DocumentClient client, DocumentCollection documentCollect
     this.useFlatProperty = useFlatProperty;
 }
 ```
+5. Both BulkImportVerticesAsync() and BulkImportEdgesAsync() support upsert mode through the usage of a boolean parameter. If you enable this flag, this will let you replace a vertex/edge if they are already present. 
+Whether a vertex/edge is already presenet is determined by whether there already exist a vertex/edge with same id (or same [id, partitionkey] pair for a partitioned collection).
 
-5. Take a look at the GraphBulkImportTest sample solution for an example usage.
+Note that, if you have the enableUpsert = false, trying to add vertes/edge with existing id (or, [id, partitionkey] pair) will throw an exception. On the other hand doing the same thing with enableUpsert = true
+will replace the vertex/edge. 
+
+So, these need to handled carefully. With, enableUpsert = true, there is no way for the tool to know whether the original intention is to UpSert the vertex or it was due to an error in the application logic that
+generated two vertices with same id (or [id, partitionkey] pair). 
+
+6. Take a look at the GraphBulkImportTest sample solution for an example usage.
 
 
 # Contributing
