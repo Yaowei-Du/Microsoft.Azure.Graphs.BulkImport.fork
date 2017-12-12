@@ -12,7 +12,7 @@ Notes for using the Microsoft.Azure.Graphs.BulkImport library:
 Note that while adding edges we don’t check for the existence of the source or destination vertices. So one can create edges before the corresponding vertices, but it is on the user to make sure that they import the source and destination vertex eventually. 
 
 4.  Setting `useFlatProperty = true` will create vertex properties as simple properties. Setting it false will create vertex properties as an array. Use the second model, only if you need support for multi-valued properties, i.e., one property can have multiple values. 
-```
+```csharp
 /// <summary>
 /// Initializes a new instance of the <see cref="GraphBulkImport"/> class.
 /// </summary>
