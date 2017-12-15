@@ -1,4 +1,7 @@
 ﻿# Microsoft.Azure.Graphs.BulkImport Sample
+
+> Note: The nuget package for the BulkImport utility has been updated on 12/12. In order to install it, you need to update Newtonsoft.json to version 10.0.1.
+
 Notes for using the Microsoft.Azure.Graphs.BulkImport library:
 
 0. Please find the `.nupkg` for the library in `./packages` along with this read me. Make sure to reference all .dlls within this package in your code.
