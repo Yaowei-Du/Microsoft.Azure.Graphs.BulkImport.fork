@@ -42,6 +42,16 @@ generated two vertices with same id (or [id, partitionkey] pair).
 
 6. Take a look at the GraphBulkImportTest sample solution for an example usage.
 
+Example appsettings:
+```csharp
+  <appSettings>
+    <add key="DocDBEndPoint" value="https://****.documents.azure.com:443/" />
+    <add key="DocDBKey" value="zprRQ7PIxOnNZ85cQaA8ztC2I3IHO3zIcnryJUQy8o9ygfhAgOPpsnDyiBcz7zFWefweqmnSXXMZGf5S1X866g==" />
+    <add key="DocDBDatabase" value="graphdb" />
+    <add key="DocDBCollection" value="graphcollection" />
+    <add key="PartitionKeyName" value="pk" />
+  </appSettings>
+```
 
 # Contributing
 
