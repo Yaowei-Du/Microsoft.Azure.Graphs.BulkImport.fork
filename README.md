@@ -63,7 +63,7 @@ Example appsettings:
 
 - Database location: West US
 - Client location: Local machine@ West US
-- Client Configuration: 
+- Client Configuration: Intel i7 @3.6GHz, 4 cores, 8 Logical processor. RAM 32 GB. 
 - Number of vertex properties: 2
 - Number of edge properties: 1
 
