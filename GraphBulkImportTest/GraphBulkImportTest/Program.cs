@@ -7,6 +7,7 @@
     using System;
     using System.Collections.Generic;
     using System.Configuration;
+    using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
 
@@ -26,6 +27,30 @@
 
             string databaseId = ConfigurationManager.AppSettings["DocDBDatabase"];
             string collectionId = ConfigurationManager.AppSettings["DocDBCollection"];
+
+            // Uncomment the section below to create collection programatically
+
+            //Database database =
+            //    client.CreateDatabaseQuery()
+            //        .Where(db => db.Id == databaseId)
+            //        .AsEnumerable()
+            //        .FirstOrDefault();
+
+            //string partitionKey = ConfigurationManager.AppSettings["PartitionKeyName"];
+            //DocumentCollection myCollection = new DocumentCollection
+            //{
+            //    Id = collectionId
+            //};
+
+            //if (!string.IsNullOrWhiteSpace(partitionKey))
+            //{
+            //    myCollection.PartitionKey.Paths.Add("/" + partitionKey); // Omit this if you need a fixed collection 
+            //}
+
+            //await client.CreateDocumentCollectionAsync(
+            //    database.SelfLink,
+            //    myCollection,
+            //    new RequestOptions { OfferThroughput = 500000 });
 
             DocumentCollection collection = await client.ReadDocumentCollectionAsync(
                     UriFactory.CreateDocumentCollectionUri(
@@ -83,7 +108,7 @@
                     i,
                     i + 1);
 
-                for (int j = 0; j < 0; j++)
+                for (int j = 0; j < 5; j++)
                 {
                     propertyName.Append("property");
                     propertyName.Append(j);
@@ -105,7 +130,7 @@
                 v.AddProperty(new VertexProperty("pk", i));
                 v.AddProperty(new VertexProperty("name", "name" + i));
 
-                for (int j = 0; j < 0; j++)
+                for (int j = 0; j < 10; j++)
                 {
                     propertyName.Append("property");
                     propertyName.Append(j);
