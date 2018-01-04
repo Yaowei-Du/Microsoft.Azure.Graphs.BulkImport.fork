@@ -61,11 +61,11 @@ Example appsettings:
 
 # BenchMark
 
-Database location: West US
-Client location: Local machine@ West US
-Client Configuration: 
-Number of vertex properties: 2
-Number of edge properties: 1
+- Database location: West US
+- Client location: Local machine@ West US
+- Client Configuration: 
+- Number of vertex properties: 2
+- Number of edge properties: 1
 
 | collection Type  | RUs provisioned | #Vertices | #Edges | Total time(s) | Writes/s | Average RU/s | Average RU/insert
 | ------------- | ------------- | ------------- | ------------- | ------------- |------------- | ------------- | ------------- |
