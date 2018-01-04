@@ -1,13 +1,13 @@
 ﻿# A few key concepts before you start 
 
-1. [Cosmos DB Partitioning] (https://azure.microsoft.com/en-us/blog/10-things-to-know-about-documentdb-partitioned-collections/) : The same partitioning concepts applies to graph. A collection or a graph
+1. [Cosmos DB Partitioning](https://azure.microsoft.com/en-us/blog/10-things-to-know-about-documentdb-partitioned-collections/) : The same partitioning concepts applies to graph. A collection or a graph
 represent same underlying CosmosDB concept, we will use graph and collection interchangeably. Also, a partitioned graph/collection is equivalent to a unlimited collection/graph.
 
 Unlimited partitions scale automatically, i.e., they start with a fixed number of partitions and then employs more partition as the data grows. So, if you plan to ingest a lot of data (say 1 TB), we
 recommend talking to the team so that they configure right number of partitions for you. Currently, you can create a 830 GB partition without requiring support. If you create a collection with X Rus,
 you will get a collection with max(10, floor(X/6000)) partitions to start with, and it will scale automatically from there. 
 
-The reason to start with higher number of partition for quickly ingesting large amount data is that the ingestion rate can be higher than the rate at which the system can auto-scale. Auto-scale requires
+> The reason to start with higher number of partition for quickly ingesting large amount data is that the ingestion rate can be higher than the rate at which the system can auto-scale. Auto-scale requires
 rebalancing data from older partitions to newer partitions. 
 
 2. Multi-valued vs single-valued properties: Cosmos db graph supports both the models. Multi-valued properties simply indicates that a vertex property can have multiple values. 
@@ -104,7 +104,7 @@ Example appsettings:
 
 1. Slow Ingestion rate: 
 	- Check the distance between the client location and the Azure region where the database is hosted. 
-	- Check the configured throughput, ingestion can be slow if the tool is getting [throttled] (https://docs.microsoft.com/en-us/azure/cosmos-db/request-units).  It is recommended that you increase the RU/s 
+	- Check the configured throughput, ingestion can be slow if the tool is getting [throttled](https://docs.microsoft.com/en-us/azure/cosmos-db/request-units).  It is recommended that you increase the RU/s 
 during ingestion and then scale it down later. This can be done programmatically via the [ReplaceOfferAsync() API] (https://docs.microsoft.com/en-us/azure/cosmos-db/set-throughput). 
 	- Use a client with high memory, otherwise GC pressure might interrupt the ingestion. 
 	- Turn server GC on. 
