@@ -7,9 +7,8 @@ We will get rid of this dependency after we release the next SDK.
 
 2. If you are ingesting a lot of documents, higher RUs and a high memory VM is recommended. 
 
-3. The API calls accept either an IEnumerable of Vertex or IEnumerable of Edges, so if you want do bulk import in a streaming fashion, the recommendation is to create batches of Vertices and Edges, and call these APIs periodically.
-Note that, while adding edges, we don’t check for the existence of the source or destination vertices. So one can create edges before the corresponding vertices, but the onus is on the user to make sure that they import the source
- and destination vertex eventually. 
+3. The API calls accept either an IEnumerable of Vertex or IEnumerable of Edges, so if you can do bulk import in a streaming fashion, no need to apply any batching logic.
+Note that, while adding edges, we don’t check for the existence of the source or destination vertices. So one can create edges before the corresponding vertices, but the onus is on the user to make sure that they import the source and destination vertex eventually. 
 
 4.  Settng useFlatProperty = true will create vertex properties as simple properties. Setting it false will create vertex properties as an array. Use the second model, only if you need support for multi-valued properties, i.e., one 
 property can have multiple values. 

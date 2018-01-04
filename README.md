@@ -1,4 +1,10 @@
-﻿# Microsoft.Azure.Graphs.BulkImport Sample
+﻿# A few key concepts
+
+1. [Cosmos DB Partitioning] (https://azure.microsoft.com/en-us/blog/10-things-to-know-about-documentdb-partitioned-collections/) : The same partitioning concepts applies to graph. 
+2. Multi-valued vs single-valued properties: Cosmos db graph supports both the models. Multi-valued properties simply indicates that a vertex property can have multiple values. 
+If you need this feature the BulkImporter needs to be configured by setting `useFlatProperty = false`
+
+# Microsoft.Azure.Graphs.BulkImport Sample
 
 > Note: The nuget package for the BulkImport utility has been updated on 12/12. In order to install it, you need to update Newtonsoft.json to version 10.0.1.
 
@@ -52,6 +58,33 @@ Example appsettings:
     <add key="PartitionKeyName" value="pk" />
   </appSettings>
 ```
+
+# BenchMark
+
+Database location: West US
+Client location: Local machine@ West US
+Client Configuration: 
+Number of vertex properties: 2
+Number of edge properties: 1
+
+| collection Type  | RUs provisioned | #Vertices | #Edges | Total time(s) | Writes/s | Average RU/s | Average RU/insert
+| ------------- | ------------- | ------------- | ------------- | ------------- |------------- | ------------- | ------------- |
+| Fixed (10GB)  | 10,000  | 200K | ~200K | 207.28 | 1930 | 10184 | 10.55 |
+| unlimited (100GB)  | 100,000  | 200K | ~200K | 21.28 | 18679 | 83019 | 8.88 |
+| Unlimited (830GB)  | 500,000  | 200K | ~200K | 9.63 | 41495 | 163019 | 12.70 |
+
+
+# Troubleshooting
+
+1. Slow Ingestion rate: 
+	- Check the distance between the client location and the Azure region where the database is hosted. 
+	- Check the configured throughput, ingestion can be slow if the tool is getting [throttled] (https://docs.microsoft.com/en-us/azure/cosmos-db/request-units).  It is recommended that you increase the RU/s 
+during ingestion and then scale it down later. This can be done programmatically via the [ReplaceOfferAsync() API] (https://docs.microsoft.com/en-us/azure/cosmos-db/set-throughput). 
+	- Use a client with high memory, otherwise GC pressure might interrupt the ingestion. 
+	- Turn server GC on. 
+	- Do you have fixed collection (10GB)? Ingestion can be a bit slower for such collection compared to partitioned collection. Ingestion to a partitioned collection is faster as multiple partitions can be 
+filled in parallel, while a single partition is filled in a serial fashion. If you need even faster ingestion for fixed collection, you can partition your data locally and make multiple parallel calls to the
+bulk import API.  
 
 # Contributing
 
