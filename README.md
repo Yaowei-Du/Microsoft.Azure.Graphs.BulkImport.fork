@@ -1,32 +1,34 @@
 ﻿# A few key concepts before you start 
 
-1. [Cosmos DB Partitioning](https://azure.microsoft.com/en-us/blog/10-things-to-know-about-documentdb-partitioned-collections/) : The same partitioning concepts applies to graph. A collection or a graph
-represent same underlying CosmosDB concept, we will use graph and collection interchangeably. Also, a partitioned graph/collection is equivalent to a unlimited collection/graph.
+1. [Cosmos DB Partitioning](https://azure.microsoft.com/en-us/blog/10-things-to-know-about-documentdb-partitioned-collections/): 
+	The same partitioning concepts applies to graph. A collection or a graph
+	represent same underlying CosmosDB concept, we will use graph and collection interchangeably. Also, a partitioned graph/collection is equivalent to a unlimited collection/graph.
 
-Unlimited partitions scale automatically, i.e., they start with a fixed number of partitions and then employs more partition as the data grows. So, if you plan to ingest a lot of data (say 1 TB), we
-recommend talking to the team so that they configure right number of partitions for you. Currently, you can create a 830 GB partition without requiring support. If you create a collection with X Rus,
-you will get a collection with max(10, floor(X/6000)) partitions to start with, and it will scale automatically from there. 
+	Unlimited partitions scale automatically, i.e., they start with a fixed number of partitions and then employs more partition as the data grows. So, if you plan to ingest a lot of data (say 1 TB), we
+	recommend talking to the team so that they configure right number of partitions for you. Currently, you can create a 830 GB partition without requiring support. If you create a collection with X Rus,
+	you will get a collection with max(10, floor(X/6000)) partitions to start with, and it will scale automatically from there. 
 
-> The reason to start with higher number of partition for quickly ingesting large amount data is that the ingestion rate can be higher than the rate at which the system can auto-scale. Auto-scale requires
-rebalancing data from older partitions to newer partitions. 
+	> The reason to start with higher number of partition for quickly ingesting large amount data is that the ingestion rate can be higher than the rate at which the system can auto-scale. Auto-scale requires
+	rebalancing data from older partitions to newer partitions. 
 
-2. Multi-valued vs single-valued properties: Cosmos db graph supports both the models. Multi-valued properties simply indicates that a vertex property can have multiple values. 
-If you need this feature the BulkImporter needs to be configured by setting `useFlatProperty = false`. If you don't need support for this feature, please set the flag to true. 
+2. Multi-valued vs single-valued properties: 
+	Cosmos DB Graph supports both models. Multi-valued properties simply indicates that a vertex property can have multiple values. 
+	If you need this feature the BulkImporter needs to be configured by setting `useFlatProperty = false`. If you don't need support for this feature, please set the flag to true. 
 
-```csharp
-/// <summary>
-/// Initializes a new instance of the <see cref="GraphBulkImport"/> class.
-/// </summary>
-/// <param name="client">The DocumentDB client instance.</param>
-/// <param name="documentCollection">The document collection to which documents are to be bulk imported.</param>
-/// <param name="useFlatProperty">Whether the graph is set up to use Flat vertex property. If not the graph will use Gremlin vertex property which supports multi-valued and meta properties</param>
-public GraphBulkImport(DocumentClient client, DocumentCollection documentCollection, bool useFlatProperty)
-{
-    this.client = client;
-    this.collection = documentCollection;
-    this.useFlatProperty = useFlatProperty;
-}
-```
+	```csharp
+	/// <summary>
+	/// Initializes a new instance of the <see cref="GraphBulkImport"/> class.
+	/// </summary>
+	/// <param name="client">The DocumentDB client instance.</param>
+	/// <param name="documentCollection">The document collection to which documents are to be bulk imported.</param>
+	/// <param name="useFlatProperty">Whether the graph is set up to use Flat vertex property. If not the graph will use Gremlin vertex property which supports multi-valued and meta properties</param>
+	public GraphBulkImport(DocumentClient client, DocumentCollection documentCollection, bool useFlatProperty)
+	{
+	    this.client = client;
+	    this.collection = documentCollection;
+	    this.useFlatProperty = useFlatProperty;
+	}
+	```
 
 3. The tool doesn’t check for the existence of the source or destination vertices while adding an edge. So one can create edges before the corresponding vertices, but it is on the user to make sure that they import the source and destination vertex eventually. 
 
@@ -34,16 +36,16 @@ public GraphBulkImport(DocumentClient client, DocumentCollection documentCollect
 Whether a vertex/edge is already present is determined by whether there already exist a vertex/edge with same id (or same [id, partitionkey] pair for a unlimited collection). 'id' is unique for a fixed collection,
 while [id, partitionkey] pair is unique for an unlimited collection. We will call this as unique key for a graph. 
 
-Note that, if you have the enableUpsert = false, trying to add vertices/edges with existing id (or, [id, partitionkey] pair) will throw an exception. On the other hand doing the same thing with enableUpsert = true
-will replace the vertex/edge. 
+	Note that, if you have the enableUpsert = false, trying to add vertices/edges with existing id (or, [id, partitionkey] pair) will throw an exception. On the other hand doing the same thing with enableUpsert = true
+	will replace the vertex/edge. 
 
-So, these need to be handled carefully. With enableUpsert = true, there is no way for the tool to know whether the original intention is to UpSert the vertex or it was due to an error in the application logic that
-generated two vertices with same id (or [id, partitionkey] pair).
+	So, these need to be handled carefully. With enableUpsert = true, there is no way for the tool to know whether the original intention is to UpSert the vertex or it was due to an error in the application logic that
+	generated two vertices with same id (or [id, partitionkey] pair).
 
-```csharp
-GraphBulkImportResponse vResponse =
-                await graphBulkImporter.BulkImportVerticesAsync(iVertices, enableUpsert:true).ConfigureAwait(false);
-``` 
+	```csharp
+	GraphBulkImportResponse vResponse =
+			await graphBulkImporter.BulkImportVerticesAsync(iVertices, enableUpsert:true).ConfigureAwait(false);
+	``` 
 
 
 # Using the Microsoft.Azure.Graphs.BulkImport Sample
@@ -98,7 +100,7 @@ Example appsettings:
 | Unlimited (830 GB)  | 500,000  | 200K | ~200K | 10.22 | 39120 | 250052 | 12.78 |
 
 * A k GB graph has k/10 partitions each of size 10GB. So, the 830GB graph has 83 partition. 
-* These numbers may vary depending on available network bandwidth
+* These numbers may vary depending many factors, including network bandwidth, hardware specifications, software platform versions and more. The numbers expressed here are not guarantees of performance.
 
 # Troubleshooting
 
