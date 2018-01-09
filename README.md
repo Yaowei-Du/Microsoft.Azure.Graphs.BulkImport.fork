@@ -8,10 +8,12 @@ recommend talking to the team so that they configure right number of partitions 
 you will get a collection with max(10, floor(X/6000)) partitions to start with, and it will scale automatically from there. 
 
 > The reason to start with higher number of partition for quickly ingesting large amount data is that the ingestion rate can be higher than the rate at which the system can auto-scale. Auto-scale requires
-rebalancing data from older partitions to newer partitions. 
+re-balancing data from older partitions to newer partitions. 
 
 2. Multi-valued vs single-valued properties: Cosmos db graph supports both the models. Multi-valued properties simply indicates that a vertex property can have multiple values. 
 If you need this feature the BulkImporter needs to be configured by setting `useFlatProperty = false`. If you don't need support for this feature, please set the flag to true. 
+
+> Note that, currently, the Azure portal graph explorer only works with multi-valued properties. We are working on graph explorer to support flat property vertices as well. 
 
 ```csharp
 /// <summary>
