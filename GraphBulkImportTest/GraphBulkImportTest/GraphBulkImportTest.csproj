@@ -62,9 +62,8 @@
       <HintPath>..\packages\Gremlin.Net.0.2.2\lib\net45\Gremlin.Net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Azure.CosmosDB.BulkImport, Version=1.19.0.0, Culture=neutral, PublicKeyToken=69c3241e6f0468ca, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Azure.Graphs.BulkImport.0.0.1-preview\lib\net45\Microsoft.Azure.CosmosDB.BulkImport.dll</HintPath>
+    <Reference Include="Microsoft.Azure.CosmosDB.BulkExecutor">
+      <HintPath>..\..\packages\Microsoft.Azure.Graphs.BulkImport.0.0.1-preview\lib\net45\Microsoft.Azure.CosmosDB.BulkExecutor.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.Documents.Client, Version=1.19.0.0, Culture=neutral, PublicKeyToken=69c3241e6f0468ca, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

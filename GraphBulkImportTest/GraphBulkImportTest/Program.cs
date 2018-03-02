@@ -53,7 +53,8 @@
 
             DocumentCollection collection = null;
 
-            try {
+            try
+            {
                 collection = await client.ReadDocumentCollectionAsync(
                     UriFactory.CreateDocumentCollectionUri(databaseId, collectionId)).ConfigureAwait(false);
             }
@@ -66,7 +67,7 @@
                 bool isPartitionedGraph = bool.Parse(ConfigurationManager.AppSettings["IsPartitionedGraph"]);
 
                 Console.WriteLine(string.Format("No graph found. Creating a graph collection: {0} with throughput = {1}", collectionId, throughput));
-                if(isPartitionedGraph)
+                if (isPartitionedGraph)
                 {
                     Console.WriteLine(string.Format("The collection is a partitioned collection with partition Key: /{0}", partitionKey));
                 }
@@ -84,7 +85,7 @@
 
                 if (isPartitionedGraph)
                 {
-                    if(string.IsNullOrWhiteSpace(partitionKey))
+                    if (string.IsNullOrWhiteSpace(partitionKey))
                     {
                         throw new ArgumentNullException("PartionKey can't be null for a partitioned collection");
                     }
@@ -99,7 +100,7 @@
             }
 
 
-            GraphBulkImport graphBulkImporter = new GraphBulkImport(client, collection, useFlatProperty:false);
+            GraphBulkImport graphBulkImporter = new GraphBulkImport(client, collection, useFlatProperty: false);
 
             await graphBulkImporter.InitializeAsync();
 
@@ -134,14 +135,14 @@
             {
                 GremlinServer server = new GremlinServer(
                     ConfigurationManager.AppSettings["GremlinServerEndPoint"],
-                    int.Parse(ConfigurationManager.AppSettings["GremlinServerPort"]), 
-                    true, 
-                    "/dbs/"+ ConfigurationManager.AppSettings["Database"] + "/colls/"+ ConfigurationManager.AppSettings["Collection"],
+                    int.Parse(ConfigurationManager.AppSettings["GremlinServerPort"]),
+                    true,
+                    "/dbs/" + ConfigurationManager.AppSettings["Database"] + "/colls/" + ConfigurationManager.AppSettings["Collection"],
                     ConfigurationManager.AppSettings["PrimaryKey"]);
 
                 using (GremlinClient gClient = new GremlinClient(server))
                 {
-                    foreach(string query in Program.gremlinQueries)
+                    foreach (string query in Program.gremlinQueries)
                     {
                         ExecuteGremlinServerQuery(gClient, query);
                     }
@@ -252,7 +253,7 @@
             for (int i = 0; i < count; i++)
             {
                 Vertex v = new Vertex(i.ToString(), "vertex");
-                v.AddProperty(new VertexProperty("pk", i));
+                v.AddProperty(new VertexProperty(ConfigurationManager.AppSettings["PartitionKeyName"], i));
                 v.AddProperty(new VertexProperty("name", "name" + i));
 
                 for (int j = 0; j < 10; j++)
