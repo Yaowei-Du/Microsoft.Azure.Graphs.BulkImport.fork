@@ -137,6 +137,12 @@
             {
                 // Elevating the partition key object as root level object for vertices
                 JArray pk = doc.GetPropertyValue<JArray>(ConfigurationManager.AppSettings["DestPartitionKey"]);
+
+                if(pk.Count > 1)
+                {
+                    throw new Exception("Partition key property can't be multi-valued property");
+                }
+
                 JObject prop = (JObject)pk[0];
                 object pkObject = prop.GetValue("_value");
 
