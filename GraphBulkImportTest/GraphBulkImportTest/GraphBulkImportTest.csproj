@@ -72,6 +72,7 @@
     <Reference Include="Microsoft.Azure.Graphs, Version=1.19.0.0, Culture=neutral, PublicKeyToken=69c3241e6f0468ca, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.Azure.Graphs.BulkImport.0.0.1-preview\lib\net45\Microsoft.Azure.Graphs.dll</HintPath>
+      <Aliases>graphs</Aliases>
     </Reference>
     <Reference Include="Microsoft.Azure.Graphs.BulkImport, Version=1.19.0.0, Culture=neutral, PublicKeyToken=69c3241e6f0468ca, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

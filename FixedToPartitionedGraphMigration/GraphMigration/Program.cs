@@ -66,7 +66,8 @@
                 {
                     bulkImportResponse = await documentBulkImporter.BulkImportAsync(
                         vertexdocs.Select(vertex => GetGraphelementString(vertex)),
-                        enableUpsert:true);
+                        enableUpsert:true,
+                        batchSize: 100000);
                 }
                 catch (DocumentClientException de)
                 {
@@ -79,12 +80,15 @@
                     throw;
                 }
 
+                Console.WriteLine("Importing edges");
+
                 IEnumerable<Document> edgeDocs = GetDocs(srcClient, srcCollection, false);
                 try
                 {
                     bulkImportResponse = await documentBulkImporter.BulkImportAsync(
                         edgeDocs.Select(edge => GetGraphelementString(edge)),
-                        enableUpsert: true);
+                        enableUpsert: true,
+                        batchSize: 100000);
                 }
                 catch (DocumentClientException de)
                 {

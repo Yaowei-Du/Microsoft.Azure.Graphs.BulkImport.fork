@@ -1,10 +1,10 @@
 ﻿namespace GraphBulkImportTest
 {
+    extern alias graphs;
     using Gremlin.Net;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
-    using Microsoft.Azure.Graphs;
     using Microsoft.Azure.Graphs.BulkImport;
     using Microsoft.Azure.Graphs.Elements;
     using Newtonsoft.Json;
@@ -105,11 +105,21 @@
             await graphBulkImporter.InitializeAsync();
 
             int count = int.Parse(ConfigurationManager.AppSettings["NumVertices"]);
+            int batchSize = int.Parse(ConfigurationManager.AppSettings["BatchSize"]);
 
             GraphBulkImportResponse vResponse =
-                await graphBulkImporter.BulkImportVerticesAsync(GenerateVertices(count), enableUpsert: true).ConfigureAwait(false);
+                await graphBulkImporter.BulkImportVerticesAsync(
+                    GenerateVertices(count), 
+                    enableUpsert: true,
+                    batchSize: batchSize).ConfigureAwait(false);
+
+            Console.WriteLine("\n\nAdding edges\n\n");
+
             GraphBulkImportResponse eResponse =
-                await graphBulkImporter.BulkImportEdgesAsync(GenerateEdges(count), enableUpsert: true).ConfigureAwait(false);
+                await graphBulkImporter.BulkImportEdgesAsync(
+                    GenerateEdges(0), 
+                    enableUpsert: true,
+                    batchSize: batchSize).ConfigureAwait(false);
 
             Console.WriteLine("\nSummary for batch");
             Console.WriteLine("--------------------------------------------------------------------- ");
@@ -154,19 +164,6 @@
             }
             Console.WriteLine("---------------------------------------------------------------------\n ");
 
-            // Using the Graph Server (Supports gremlin queries)
-            try
-            {
-                foreach (string query in Program.gremlinQueries)
-                {
-                    await ExecuteGraphServerQueryAsync(client, collection, query);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-            Console.WriteLine("---------------------------------------------------------------------\n ");
 
             // Using the document server (Supports DocumentDB SQL queries)
             try
@@ -183,18 +180,6 @@
             Console.WriteLine("---------------------------------------------------------------------\n ");
 
             Console.ReadLine();
-        }
-
-        private static async Task ExecuteGraphServerQueryAsync(DocumentClient client, DocumentCollection collection, string queryString)
-        {
-            IDocumentQuery<dynamic> query = client.CreateGremlinQuery<dynamic>(collection, queryString);
-            while (query.HasMoreResults)
-            {
-                foreach (dynamic result in await query.ExecuteNextAsync())
-                {
-                    Console.WriteLine(result);
-                }
-            }
         }
 
         private static async Task ExecuteDocumentServerQueryAsync(DocumentClient client, DocumentCollection collection, string queryString)
