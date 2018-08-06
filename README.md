@@ -1,5 +1,4 @@
-# Please Consider using the the public version of the tool: https://github.com/Azure-Samples/azure-cosmosdb-graph-bulkexecutor-dotnet-getting-started
-
+# This library is now in General Availability. Here is the public version of this sample: https://github.com/Azure-Samples/azure-cosmosdb-graph-bulkexecutor-dotnet-getting-started
 
 # A few key concepts before you start 
 
