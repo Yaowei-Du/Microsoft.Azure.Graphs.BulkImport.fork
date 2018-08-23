@@ -1,16 +1,22 @@
-﻿namespace GraphMigration
+﻿//------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//------------------------------------------------------------
+
+namespace GraphMigration
 {
-    using Microsoft.Azure.CosmosDB.BulkExecutor;
-    using Microsoft.Azure.CosmosDB.BulkExecutor.BulkImport;
-    using Microsoft.Azure.Documents;
-    using Microsoft.Azure.Documents.Client;
-    using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.Configuration;
     using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
+    using Microsoft.Azure.CosmosDB.BulkExecutor;
+    using Microsoft.Azure.CosmosDB.BulkExecutor.BulkImport;
+    using Microsoft.Azure.CosmosDB.BulkExecutor.Graph;
+    using Microsoft.Azure.Documents;
+    using Microsoft.Azure.Documents.Client;
+    using Newtonsoft.Json.Linq;
+    using Microsoft.Azure.CosmosDB.BulkExecutor.Graph.Element;
 
     class Program
     {
@@ -56,18 +62,18 @@
                 watch.Start();
 
 
-                IBulkExecutor documentBulkImporter = new BulkExecutor(destClient, destCollection);
+                IBulkExecutor documentBulkImporter = new GraphBulkExecutor(destClient, destCollection);
                 await documentBulkImporter.InitializeAsync();
 
                 BulkImportResponse bulkImportResponse = null;
 
-                IEnumerable<Document> vertexdocs = GetDocs(srcClient, srcCollection, true);
+                IEnumerable<JObject> vertexdocs = GetDocs(srcClient, srcCollection, true);
                 try
                 {
                     bulkImportResponse = await documentBulkImporter.BulkImportAsync(
-                        vertexdocs.Select(vertex => GetGraphelementString(vertex)),
+                        vertexdocs.Select(vertex => ConvertToGremlinVertex(vertex)),
                         enableUpsert:true,
-                        batchSize: 100000);
+                        maxInMemorySortingBatchSize: 100000);
                 }
                 catch (DocumentClientException de)
                 {
@@ -82,13 +88,13 @@
 
                 Console.WriteLine("Importing edges");
 
-                IEnumerable<Document> edgeDocs = GetDocs(srcClient, srcCollection, false);
+                IEnumerable<JObject> edgeDocs = GetDocs(srcClient, srcCollection, false);
                 try
                 {
                     bulkImportResponse = await documentBulkImporter.BulkImportAsync(
-                        edgeDocs.Select(edge => GetGraphelementString(edge)),
+                        edgeDocs.Select(edge => ConvertToGremlinEdge(edge)),
                         enableUpsert: true,
-                        batchSize: 100000);
+                        maxInMemorySortingBatchSize: 100000);
                 }
                 catch (DocumentClientException de)
                 {
@@ -111,7 +117,7 @@
             Console.ReadLine();
         }
 
-        private static IEnumerable<Document> GetDocs(DocumentClient client, DocumentCollection collection, bool isVertices)
+        private static IEnumerable<JObject> GetDocs(DocumentClient client, DocumentCollection collection, bool isVertices)
         {
             FeedOptions feedOptions = new FeedOptions
             {
@@ -132,17 +138,24 @@
                 queryText = "select* from root where IS_DEFINED(root._isEdge) = true";
             }
 
-            return client.CreateDocumentQuery<Document>(collection.AltLink, queryText, feedOptions).AsEnumerable();
+            return client.CreateDocumentQuery<JObject>(collection.AltLink, queryText, feedOptions).AsEnumerable();
         }
 
-        private static string GetGraphelementString(Document doc)
+        private static GremlinVertex ConvertToGremlinVertex(JObject doc)
         {
-            if (doc.GetPropertyValue<bool>("_isEdge") != true)
-            {
-                // Elevating the partition key object as root level object for vertices
-                JArray pk = doc.GetPropertyValue<JArray>(ConfigurationManager.AppSettings["DestPartitionKey"]);
+            GremlinVertex gv = null;
 
-                if(pk.Count > 1)
+            if (doc.GetValue("_isEdge") == null)
+            {
+                string docId = (string)doc.GetValue("id");
+                // add id 
+                // add label
+                gv = new GremlinVertex(docId, (string)doc.GetValue("label"));
+
+                // add pk : Elevating the partition key object as root level object for vertices
+                JArray pk = (JArray)doc.GetValue(ConfigurationManager.AppSettings["DestPartitionKey"]);
+
+                if (pk.Count > 1)
                 {
                     throw new Exception("Partition key property can't be multi-valued property");
                 }
@@ -150,24 +163,79 @@
                 JObject prop = (JObject)pk[0];
                 object pkObject = prop.GetValue("_value");
 
-                doc.SetPropertyValue(ConfigurationManager.AppSettings["DestPartitionKey"], pkObject);
+                gv.AddProperty(new GremlinVertexProperty(ConfigurationManager.AppSettings["DestPartitionKey"], pkObject));
 
-                if (!Program.idPKMapping.ContainsKey(doc.Id))
+                if (!Program.idPKMapping.ContainsKey(docId))
                 {
-                    idPKMapping.Add(doc.Id, pkObject);
+                    idPKMapping.Add(docId, pkObject);
+                }
+
+                // add ttl 
+                if (doc.GetValue("ttl") != null)
+                {
+                    gv.AddProperty(new GremlinVertexProperty("ttl", (long)doc.GetValue("ttl")));
+                }
+
+                // add all properties
+
+                foreach (JProperty jp in doc.Properties())
+                {
+                    if(jp.Name == "id" 
+                        || jp.Name == ConfigurationManager.AppSettings["DestPartitionKey"]
+                        || jp.Name == "ttl"
+                        || jp.Name == "label"
+                        || jp.Name == "_rid"
+                        || jp.Name == "_etag"
+                        || jp.Name == "_self"
+                        || jp.Name == "_ts"
+                        || jp.Name == "_attachements"
+                        || !(jp.Value is JArray))
+                    {
+                        continue;
+                    }
+
+                    JArray propArray = jp.Value as JArray;
+                    JObject propObject = (JObject)propArray[0];
+                    object propertValue = propObject.GetValue("_value");
+
+                    gv.AddProperty(new GremlinVertexProperty(jp.Name, propertValue));
                 }
             }
-            else
+
+            return gv;
+        }
+
+        private static GremlinEdge ConvertToGremlinEdge(JObject doc)
+        {
+            GremlinEdge ge = null;
+
+            if ((bool)doc.GetValue("_isEdge") == true)
             {
                 // Populating the source and destination partition key on the edges
-                string srcId = doc.GetPropertyValue<string>("_vertexId");
-                string sinkId = doc.GetPropertyValue<string>("_sink");
+                string outVertexId = (string)doc.GetValue("_vertexId");
+                string invertexId = (string)doc.GetValue("_sink");
 
-                doc.SetPropertyValue(ConfigurationManager.AppSettings["DestPartitionKey"], idPKMapping[srcId]);
-                doc.SetPropertyValue("_sinkPartition", idPKMapping[sinkId]);
+                string edgeId = (string)doc.GetValue("id");
+                string edgeLabel = (string)doc.GetValue("label");
+
+                string outVertexLabel = (string)doc.GetValue("_vertexLabel");
+                string invertexLabel = (string)doc.GetValue("_sinkLabel");
+
+                object outVertexPartitionKey = idPKMapping[outVertexId];
+                object inVertexPartitionKey = idPKMapping[invertexId];
+
+                ge = new GremlinEdge(
+                    edgeId: edgeId,
+                    edgeLabel: edgeLabel,
+                    outVertexId: outVertexId,
+                    inVertexId: invertexId,
+                    outVertexLabel: outVertexLabel,
+                    inVertexLabel: invertexLabel,
+                    outVertexPartitionKey: outVertexPartitionKey,
+                    inVertexPartitionKey: inVertexPartitionKey);
             }
 
-            return doc.ToString();
+            return ge;
         }
 
         private static async Task<DocumentCollection> ReadCollectionAsync(DocumentClient client, string databaseName, string collectionName, bool isPartitionedCollection)
