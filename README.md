@@ -1,4 +1,6 @@
-﻿# A few key concepts before you start 
+# This library is now in General Availability. Here is the public version of this sample: https://github.com/Azure-Samples/azure-cosmosdb-graph-bulkexecutor-dotnet-getting-started
+
+# A few key concepts before you start 
 
 1. [Cosmos DB Partitioning](https://azure.microsoft.com/en-us/blog/10-things-to-know-about-documentdb-partitioned-collections/) : The same partitioning concepts applies to graph. A collection or a graph
 represent same underlying CosmosDB concept, we will use graph and collection interchangeably. Also, a partitioned graph/collection is equivalent to a unlimited collection/graph.
